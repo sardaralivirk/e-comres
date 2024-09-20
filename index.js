@@ -10,7 +10,7 @@ app.use('/',router)
 
 db()
 .then(()=>{
-    app.listen(process.env.PORT||4000,"0.0.0.0",()=>{
+    app.listen(process.env.PORT||4000,()=>{
         console.log(`your server is running on this port:${process.env.PORT}`)
     })
 
