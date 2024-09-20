@@ -3,7 +3,7 @@ import express from "express"
 
 const router=express()
 import { userVerify } from "../midleware/middleware.js"
-import {signUpUser,logIn,Sales,softDelete,createCategory,loginWithGoogle,productCreate,deleteProductInAdToCard,createOrder,AdtoCart,deleteApi,productMinseInAdToCart, updateCategory} from "../controller/controller.js"
+import {signUpUser,logIn,Sales,softDelete,createCategory,productCreate,deleteProductInAdToCard,createOrder,AdtoCart,deleteApi,productMinseInAdToCart, updateCategory} from "../controller/controller.js"
 
 router.post('/signUpUser',signUpUser)
 router.post('/logIn',logIn)
@@ -16,7 +16,7 @@ router.delete('/delete',deleteApi)
 router.put('/updatecatagory',updateCategory)
 router.post('/productMinseInAdToCart',productMinseInAdToCart)
 router.put('/deleteProductInAdToCard',deleteProductInAdToCard)
-router.post('/googleLogin',loginWithGoogle)
+// router.post('/googleLogin',loginWithGoogle)
 router.delete('/softDelete',softDelete)
 
 

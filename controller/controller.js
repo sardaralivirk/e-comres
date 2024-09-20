@@ -336,28 +336,7 @@ const deleteProductInAdToCard=async (req,res) => {
     }
     
 }
-const loginWithGoogle=async (req,res) => {
-    try {
-        const code=req.query
-        const googleRes= await Client.getToken(code)
-        Client.setCredentials(googleRes.tokens)
-        const userRes=await axios.get(
-            `https://www.googleapis.com/oauth2/v1/certs=${googleRes.tokens.access_token}`
-        )
-        const email=userRes.data
-        let find=await user.findOne({email})
-        if(!find){
-            user=new user.create({email})
-        }
-        const {_id}=find
-        const token=jwt.sign({_id},secretKey,{timeout})
-        return res.status.json({message:'sucess',token,user})
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({message:'go and find error if you brain'})
-    }
-    
-}
+
 const softDelete=async (req,res) => {
     try {
         const {update,productId,categoryId}=req.body
@@ -378,4 +357,4 @@ const softDelete=async (req,res) => {
     }
 }
 
-export {signUpUser,logIn,Sales,softDelete,createCategory,productCreate,loginWithGoogle,createOrder,AdtoCart,deleteApi,updateCategory,productMinseInAdToCart,deleteProductInAdToCard}
+export {signUpUser,logIn,Sales,softDelete,createCategory,productCreate,createOrder,AdtoCart,deleteApi,updateCategory,productMinseInAdToCart,deleteProductInAdToCard}
