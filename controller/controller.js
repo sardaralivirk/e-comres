@@ -4,6 +4,8 @@ import { category } from "../models/catagory.model.js"
 import { product } from "../models/product.model.js"
 import { order } from "../models/order.model.js"
 import { adCart } from "../models/addToCart.js"
+import Stripe from 'stripe'
+const stripe=new Stripe(process.env.stripe_key,{ apiVersion: '2023-08-16'})
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import otp from "otp-generator"
@@ -147,60 +149,76 @@ const productCreate=async (req,res) => {
         try {
             const user=req.user
             
-         const find= await adCart.find({isCheckedOut:false,userId:user._id}).populate('product')
-         const check =find.match/name /im;
-             console.log(check)
-            //     find.map(async (item) => {
-            //         const products = await product.findById(item.product);
+         const find= await adCart.find({isCheckedOut:false}).populate('product')
+       //  const check =find.match/name /im;
+            // console.log(check)
+                find.map(async (item) => {
+                    const products = await product.findById(item.product);
 
-            //         return {
-            //             ...item._doc, // spread the cart item details
-            //             productName: products ? products.name : 'Product not found',
-            //         };
-            //     })
+                    return {
+                        ...item._doc, // spread the cart item details
+                        productName: products ? products.name : 'Product not found',
+                    };
+                })
             //);
-            //console.log(find)
-    //         const productDetails = detailedCartItems.map(({ productName, price, quantity }) => {
-    //             return { productName, price, quantity };
-    //            // return `<p>Product Name: ${productName}, Price: ${price},Quanity:${quantity}</p>`;
-    //           });
-    //         console.log('=============================33==',productDetails,"===========================44");
+            console.log(find)
+            const productDetails = detailedCartItems.map(({ productName, price, quantity }) => {
+                return { productName, price, quantity };
+               // return `<p>Product Name: ${productName}, Price: ${price},Quanity:${quantity}</p>`;
+              });
+            console.log('=============================33==',productDetails,"===========================44");
             
-    //      let totalprice=0
-    //        productDetails.forEach(a => {  
-    //         if(a.price)
-    //             {totalprice+=a.price}
-    //     });
+         let totalprice=0
+           productDetails.forEach(a => {  
+            if(a.price)
+                {totalprice+=a.price}
+        });
         
-    //    const createOrder=await order.create({price:totalprice,productDetail:productDetails})
+       const createOrder1=await order.create({price:totalprice,productDetail:productDetails})
 
-    //    const formattedProductDetails = productDetails.map(product => {
-    //     return `<p>Product Name: ${product.productName}, Price: ${product.price},Quanity:${product.quantity}</p>`;
-    //   }).join(''); 
-    // //console.log(formattedProductDetails)
+       const formattedProductDetails = productDetails.map(product => {
+        return `<p>Product Name: ${product.productName}, Price: ${product.price},Quanity:${product.quantity}</p>`;
+      }).join(''); 
+    //console.log(formattedProductDetails)
   
-    //  const transporter = nodemailer.createTransport({
-    //     host: "smtp.gmail.com",
-    //     port: 587,
-    //     secure:false,
-    //     auth: {
-    //       user: "sardaralivirk@gmail.com",
-    //       pass: "hqpqljmuhxtfpgmo",
-    //     },
+     const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure:false,
+        auth: {
+          user: "sardaralivirk@gmail.com",
+          pass: "hqpqljmuhxtfpgmo",
+        },
         
-    //   });
-    //   const info = await transporter.sendMail({
-    //     from: '<sardaralivirk@gmail.com>', // sender address
-    //     to: "alivirk4160@gmail.com", // list of receivers    
-    //     subject: "Hello ✔", // Subject line
-    //     text: "Hello world?",
-    //     html:`<h1>  TotalPrice=${totalprice}/n${formattedProductDetails}</h1>`
-    //   });
-//      const updateAdToCart= await adCart.findOneAndUpdate({isCheckedOut:false},{$set:{isCheckedOut:true}})
-//      console.log(updateAdToCart)
-     return res.status(200).json({message:"you have successfully ordered",check})
+      });
+      const info = await transporter.sendMail({
+        from: '<sardaralivirk@gmail.com>', // sender address
+        to: "alivirk4160@gmail.com", // list of receivers    
+        subject: "Hello ✔", // Subject line
+        text: "Hello world?",
+        html:`<h1>  TotalPrice=${totalprice}/n${formattedProductDetails}</h1>`
+      });
+     //const updateAdToCart= await adCart.findOneAndUpdate({isCheckedOut:false},{$set:{isCheckedOut:true}})
+     //console.log(updateAdToCart)
+const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+        price: '{{PRICE_ID}}',
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    success_url: `${YOUR_DOMAIN}/success.html`,
+    cancel_url: `${YOUR_DOMAIN}/cancel.html`,
+  });
 
-    } catch (error) {
+  res.redirect(303, session.url);
+//});
+     return res.status(200).json({message:"you have successfully ordered",createOrder1})
+
+    } 
+    catch (error) {
         console.log(error)
         return res.status(500).json({message:"go and find error",error})
         
@@ -357,4 +375,26 @@ const softDelete=async (req,res) => {
     }
 }
 
+// const payment=async (req,res) => {
+//     try {
+//         const session = await stripe.checkout.sessions.create({
+//             line_items: [
+//               {
+//                 price: '{{RECURRING_PRICE_ID}}',
+//                 quantity: 1,
+//               },
+//               {
+//                 price: '{{ONE_TIME_PRICE_ID}}',
+//                 quantity: 1,
+//               },
+//             ],
+//             mode: 'subscription',
+//             success_url: 'https://example.com/success',
+//             cancel_url: 'https://example.com/cancel',
+//           });
+//     } catch (error) {
+//         console.log(error)
+//         return res.status(500).json({message:"go and find error",error})
+//     }
+// }
 export {signUpUser,logIn,Sales,softDelete,createCategory,productCreate,createOrder,AdtoCart,deleteApi,updateCategory,productMinseInAdToCart,deleteProductInAdToCard}

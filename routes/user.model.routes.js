@@ -16,7 +16,7 @@ router.delete('/delete',deleteApi)
 router.put('/updatecatagory',updateCategory)
 router.post('/productMinseInAdToCart',productMinseInAdToCart)
 router.put('/deleteProductInAdToCard',deleteProductInAdToCard)
-// router.post('/googleLogin',loginWithGoogle)
+//  router.post('/payment',payment)
 router.delete('/softDelete',softDelete)
 
 
